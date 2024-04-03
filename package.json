@@ -1,0 +1,23 @@
+{
+  "name": "zapcap",
+  "version": "1.0.2",
+  "description": "API Client for zapcap.dev",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/zapcapAI/zapcap-nodejs/",
+  "author": "zapcap dev <dev@zapcap.dev>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "generateClient": "openapi-generator-cli generate -g typescript-axios -i api.yaml -o ./src/",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "dependencies": {
+    "@types/node": "^20.11.30",
+    "axios": "^1.6.8",
+    "form-data": "^4.0.0"
+  }
+}

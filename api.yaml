@@ -1,0 +1,429 @@
+openapi: 3.0.0
+paths:
+  /api-keys/status:
+    get:
+      operationId: apiKeyStatus
+      parameters: []
+      responses:
+        "200":
+          description: Get API Key status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKeyStatusResponseDto"
+      security:
+        - API_KEY: []
+  /videos:
+    post:
+      operationId: uploadVideo
+      parameters: []
+      requestBody:
+        required: true
+        description: "Video to upload. Mimetypes allowed: `video/mp4`, `video/quicktime`"
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/VideoUploadRequestDto"
+      responses:
+        "201":
+          description: >-
+            Endpoint for uploading a video. You can use the generated `id` in
+            the `POST /api/videos/{id}/task` endpoint to create a task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateVideoResponseDto"
+      security:
+        - API_KEY: []
+  /videos/{videoId}/task:
+    post:
+      operationId: createTask
+      parameters:
+        - name: videoId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVideoTaskRequestDto"
+      responses:
+        "201":
+          description: >-
+            Create a task for a video. This task will be processed
+            asynchronously You can use the `GET /api/videos/:videoId/task/:id`
+            endpoint to poll for the status.
+
+            Video id in request parameter is from the response of `POST
+            /api/videos`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateVideoTaskResponseDto"
+      security:
+        - API_KEY: []
+  /videos/{videoId}/task/{id}:
+    get:
+      operationId: getVideoTask
+      parameters:
+        - name: videoId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: >-
+            Get the status of a video task initiated by `POST
+            /api/videos/:videoId/task`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetVideoTaskResponseDto"
+      security:
+        - API_KEY: []
+  /videos/{videoId}/task/{id}/approve-transcript:
+    post:
+      operationId: approveTranscript
+      parameters:
+        - name: videoId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "204":
+          description: >-
+            Approves the transcription for a specific video task.
+
+            This action marks the transcription as reviewed and accepted,
+
+            allowing the task to proceed to the next processing stage.
+
+            A successful operation returns no content, indicating the approval
+            has been
+
+            recorded, and the task is now queued for further processing
+            according to its workflow.
+      security:
+        - API_KEY: []
+  /videos/{videoId}/task/{id}/transcript:
+    get:
+      operationId: getTranscript
+      parameters:
+        - name: videoId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Download the transcript
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WordEntryDto"
+      security:
+        - API_KEY: []
+    put:
+      operationId: updateTranscript
+      parameters:
+        - name: videoId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Array of updated word entries
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/UpdateWordEntryDto"
+      responses:
+        "200":
+          description: Update the transcript
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WordEntryDto"
+      security:
+        - API_KEY: []
+  /templates:
+    get:
+      operationId: getTemplates
+      parameters: []
+      responses:
+        "200":
+          description: >-
+            1. Choose the template `id` from the response you wish to add to
+            your video.
+
+            2. Supply the chosen `id` in the `templateId` field of the Create
+            Task endpint.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TemplateDto"
+      security:
+        - API_KEY: []
+  /user-billing:
+    get:
+      operationId: getUserBilling
+      parameters: []
+      responses:
+        "200":
+          description: >-
+            Available total render duration and used render duration. Remaining
+            render duration = `totalRenderDuration - usedRenderDuration`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserBillingResponseDto"
+      security:
+        - API_KEY: []
+info:
+  title: ZapCap API
+  description: API for generating amazing subtitles for your videos
+  version: "1.0"
+  contact: {}
+tags:
+  - name: zapcap
+    description: ""
+servers: []
+components:
+  securitySchemes:
+    API_KEY:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    ApiKeyStatusResponseDto:
+      type: object
+      properties:
+        apiKey:
+          type: string
+          description: API Key
+        active:
+          type: boolean
+          description: Status of API Key. Can only be disabled by support.
+      required:
+        - apiKey
+        - active
+    VideoUploadRequestDto:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+        - file
+    VideoStatusEnum:
+      type: string
+      enum:
+        - todo
+        - uploaded
+        - aborted
+    CreateVideoResponseDto:
+      type: object
+      properties:
+        status:
+          example: uploaded
+          $ref: "#/components/schemas/VideoStatusEnum"
+        id:
+          type: string
+          description: Use this `id` to create a video task
+          example: cd97a23f-6c6d-4af7-ad66-b04ed4bb1c5e
+      required:
+        - status
+        - id
+    CreateVideoTaskRequestDto:
+      type: object
+      properties:
+        templateId:
+          type: string
+          description: Template `id` gotten from Get Templates endpoint
+          example: a51c5222-47a7-4c37-b052-7b9853d66bf6
+        autoApprove:
+          type: boolean
+          description: >-
+            Optional flag to automatically approve the task upon creation.
+
+            When set to true, the task is immediately marked as approved,
+            allowing it to proceed to the next stage of processing without
+            requiring manual approval.
+
+            This is useful for workflows where immediate processing of the task
+            is desired, bypassing the need for an explicit approval step.
+          default: false
+      required:
+        - templateId
+    CreateVideoTaskResponseDto:
+      type: object
+      properties:
+        taskId:
+          type: string
+          description: >-
+            `id` to use when querying the processing task's status in the Get
+            Video Task endpoint
+          example: 54abe67d-be14-4c78-800b-01d12bcfaaa6
+      required:
+        - taskId
+    VideoTaskStatusEnum:
+      type: string
+      enum:
+        - pending
+        - transcribing
+        - transcriptionCompleted
+        - rendering
+        - completed
+        - failed
+    GetVideoTaskResponseDto:
+      type: object
+      properties:
+        status:
+          example: completed
+          $ref: "#/components/schemas/VideoTaskStatusEnum"
+        id:
+          type: string
+          example: 54abe67d-be14-4c78-800b-01d12bcfaaa6
+        transcript:
+          type: string
+          nullable: true
+          description: Url to download the transcript. Link is valid for 1 hour
+        downloadUrl:
+          type: string
+          nullable: true
+          description: Url to download the final file. Link is valid for 1 hour
+        transcriptApproved:
+          type: boolean
+          description: Whether the transcript has been approved.
+      required:
+        - status
+        - id
+        - transcript
+        - downloadUrl
+    WordEntryDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of the specific word instance
+        text:
+          type: string
+          description: The subtitle text
+        type:
+          type: string
+          description: Type of the entry
+          example: word
+        confidence:
+          type: number
+          description: Confidence score for the word recognition
+          example: 0.95
+        end_time:
+          type: number
+          description: End time in seconds
+          example: 3.18
+        start_time:
+          type: number
+          description: Start time in seconds
+          example: 2.12
+        emoji:
+          type: string
+          description: Emoji representation of the word
+          nullable: true
+          example: ðŸ˜Š
+        important:
+          type: boolean
+          description: Indicates if the word is important, and should be highlighted.
+      required:
+        - id
+        - text
+        - type
+        - confidence
+        - end_time
+        - start_time
+    UpdateWordEntryDto:
+      type: object
+      properties:
+        text:
+          type: string
+          description: The subtitle text
+        type:
+          type: string
+          description: Type of the entry
+          example: word
+        end_time:
+          type: number
+          description: End time in seconds
+          example: 3.18
+        start_time:
+          type: number
+          description: Start time in seconds
+          example: 2.12
+        emoji:
+          type: string
+          description: Emoji representation of the word
+          nullable: true
+          example: ðŸ˜Š
+        important:
+          type: boolean
+          description: Indicates if the word is important, and should be highlighted.
+      required:
+        - text
+        - type
+        - end_time
+        - start_time
+    TemplateDto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: a51c5222-47a7-4c37-b052-7b9853d66bf6
+      required:
+        - id
+    UserBillingResponseDto:
+      type: object
+      properties:
+        totalRenderDuration:
+          type: number
+          description: Total render duration accumulated
+          example: 180
+        usedRenderDuration:
+          type: number
+          description: Total render duration use accumulated
+          example: 60
+      required:
+        - totalRenderDuration
+        - usedRenderDuration
