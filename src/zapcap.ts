@@ -19,8 +19,8 @@ export type ZapCapOptions = {
 };
 
 export type PollForTranscriptOptions = {
-  retryFrequency: number; // in milliseconds
-  timeout: number; // in milliseconds
+  retryFrequencyMs: number; // in milliseconds
+  timeoutMs: number; // in milliseconds
 };
 
 export type ProcessedWords = {
@@ -130,12 +130,12 @@ class ZapCapHelpers {
     videoId: string,
     taskId: string,
     options: PollForTranscriptOptions = {
-      retryFrequency: 5000,
-      timeout: 60000,
+      retryFrequencyMs: 5000,
+      timeoutMs: 60000,
     },
     verboseLogging: boolean = true
   ): Promise<ProcessedWords> {
-    const { retryFrequency, timeout } = options;
+    const { retryFrequencyMs, timeoutMs } = options;
     const startTime = Date.now();
     let pollCount = 0;
 
@@ -155,7 +155,7 @@ class ZapCapHelpers {
         const transcriptUrl = response.data.transcript;
         const download = await this._axios.get<ProcessedWords>(transcriptUrl);
         return download.data;
-      } else if (Date.now() - startTime > timeout) {
+      } else if (Date.now() - startTime > timeoutMs) {
         return Promise.reject(
           new Error(
             "ZapCap: Timeout reached while waiting for transcription to complete"
@@ -164,10 +164,10 @@ class ZapCapHelpers {
       } else {
         if (verboseLogging) {
           console.log(
-            `Transcript not ready yet, retrying in ${retryFrequency}ms...`
+            `Transcript not ready yet, retrying in ${retryFrequencyMs}ms...`
           );
         }
-        await new Promise((resolve) => setTimeout(resolve, retryFrequency));
+        await new Promise((resolve) => setTimeout(resolve, retryFrequencyMs));
         return checkStatus();
       }
     };
@@ -179,12 +179,12 @@ class ZapCapHelpers {
     videoId: string,
     taskId: string,
     options: PollForTranscriptOptions = {
-      retryFrequency: 5000,
-      timeout: 120000,
+      retryFrequencyMs: 5000,
+      timeoutMs: 120000,
     },
     verboseLogging: boolean = true
   ): Promise<Readable> {
-    const { retryFrequency, timeout } = options;
+    const { retryFrequencyMs, timeoutMs } = options;
     const startTime = Date.now();
     let pollCount = 0;
 
@@ -213,15 +213,15 @@ class ZapCapHelpers {
           }
         );
         return download.data;
-      } else if (Date.now() - startTime > timeout) {
+      } else if (Date.now() - startTime > timeoutMs) {
         throw new Error("Timeout reached while waiting for render to complete");
       } else {
         if (verboseLogging) {
           console.log(
-            `Render not ready yet, retrying in ${retryFrequency}ms...`
+            `Render not ready yet, retrying in ${retryFrequencyMs}ms...`
           );
         }
-        await new Promise((resolve) => setTimeout(resolve, retryFrequency));
+        await new Promise((resolve) => setTimeout(resolve, retryFrequencyMs));
         return checkStatus();
       }
     };

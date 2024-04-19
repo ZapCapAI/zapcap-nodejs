@@ -40,8 +40,8 @@ const {
 } = await zapcap.uploadVideo(fs.createReadStream("path/to/your/video.mp4"));
 
 // Create a video task with the first available template
-const templates = await zapcap.getTemplates();
-const templateId = templates.data[0].id;
+const { data: templates } = await zapcap.getTemplates();
+const templateId = templates[0].id;
 const {
   data: { taskId },
 } = await zapcap.createVideoTask(videoId, templateId);
@@ -61,8 +61,8 @@ After initiating a video task, you may need to poll for its completion to downlo
 
 ```typescript
 const transcript = await zapcap.helpers.pollForTranscript(videoId, taskId, {
-  retryFrequency: 5000, // Poll every 5 seconds
-  timeout: 60000, // Timeout after 60 seconds
+  retryFrequencyMs: 5000, // Poll every 5 seconds
+  timeoutMs: 60000, // Timeout after 60 seconds
 });
 ```
 
@@ -74,8 +74,8 @@ Similar to polling for transcripts, the `pollForRender` function can be used to 
 
 ```typescript
 const stream = await zapcap.helpers.pollForRender(videoId, taskId, {
-  retryFrequency: 5000, // Poll every 5 seconds
-  timeout: 120000, // Timeout after 120 seconds
+  retryFrequencyMs: 5000, // Poll every 5 seconds
+  timeoutMs: 120000, // Timeout after 120 seconds
 });
 ```
 
@@ -87,10 +87,18 @@ Once a video task is completed, you may download the rendered video using stream
 import fs from "fs";
 import { pipeline } from "stream/promises";
 
-const stream = await zapcap.helpers.pollForRender(videoId, taskId);
+const stream = await zapcap.helpers.pollForRender(
+  videoId,
+  taskId,
+  {
+    retryFrequency: 5000,
+    timeout: 120000,
+  },
+  true // Enable verbose logging
+);
 const outputPath = "output.mp4";
 const writeStream = fs.createWriteStream(outputPath);
-await pipeline(writeStream, createWriteStream("output.mp4"));
+await pipeline(stream, writeStream);
 console.log(`Video has been downloaded and saved to ${outputPath}`);
 ```
 
