@@ -26,25 +26,6 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerM
 /**
  * 
  * @export
- * @interface ApiKeyStatusResponseDto
- */
-export interface ApiKeyStatusResponseDto {
-    /**
-     * API Key
-     * @type {string}
-     * @memberof ApiKeyStatusResponseDto
-     */
-    'apiKey': string;
-    /**
-     * Status of API Key. Can only be disabled by support.
-     * @type {boolean}
-     * @memberof ApiKeyStatusResponseDto
-     */
-    'active': boolean;
-}
-/**
- * 
- * @export
  * @interface CreateVideoResponseDto
  */
 export interface CreateVideoResponseDto {
@@ -81,6 +62,12 @@ export interface CreateVideoTaskRequestDto {
      * @memberof CreateVideoTaskRequestDto
      */
     'autoApprove'?: boolean;
+    /**
+     * Language the subtitles should be in. Defaults to English.
+     * @type {string}
+     * @memberof CreateVideoTaskRequestDto
+     */
+    'language': string;
 }
 /**
  * 
@@ -114,7 +101,7 @@ export interface GetVideoTaskResponseDto {
      */
     'id': string;
     /**
-     * Url to download the transcript. Link is valid for 1 hour
+     * Url to download the transcript. Link is valid for 1 hour.
      * @type {string}
      * @memberof GetVideoTaskResponseDto
      */
@@ -131,6 +118,12 @@ export interface GetVideoTaskResponseDto {
      * @memberof GetVideoTaskResponseDto
      */
     'transcriptApproved'?: boolean;
+    /**
+     * Why the task failed
+     * @type {string}
+     * @memberof GetVideoTaskResponseDto
+     */
+    'error'?: string;
 }
 
 
@@ -193,31 +186,13 @@ export interface UpdateWordEntryDto {
 /**
  * 
  * @export
- * @interface UserBillingResponseDto
- */
-export interface UserBillingResponseDto {
-    /**
-     * Total render duration accumulated
-     * @type {number}
-     * @memberof UserBillingResponseDto
-     */
-    'totalRenderDuration': number;
-    /**
-     * Total render duration use accumulated
-     * @type {number}
-     * @memberof UserBillingResponseDto
-     */
-    'usedRenderDuration': number;
-}
-/**
- * 
- * @export
  * @enum {string}
  */
 
 export const VideoStatusEnum = {
     Todo: 'todo',
     Uploaded: 'uploaded',
+    InProgress: 'inProgress',
     Aborted: 'aborted'
 } as const;
 
@@ -305,39 +280,8 @@ export interface WordEntryDto {
 export const DefaultApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        apiKeyStatus: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api-keys/status`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication API_KEY required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
+         * Approves the transcription for a specific video task. This action marks the transcription as reviewed and accepted, allowing the task to proceed to the next processing stage. A successful operation returns no content, indicating the approval has been recorded, and the task is now queued for further processing according to its workflow.
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -377,7 +321,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
+         * Create a task for a video. This task will be processed asynchronously You can use the `GET /api/videos/:videoId/task/:id` endpoint to poll for the status. Video id in request parameter is from the response of `POST /api/videos`
+         * @summary 
          * @param {string} videoId 
          * @param {CreateVideoTaskRequestDto} createVideoTaskRequestDto 
          * @param {*} [options] Override http request option.
@@ -419,7 +364,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
+         * 1. Choose the template `id` from the response you wish to add to your video. 2. Supply the chosen `id` in the `templateId` field of the Create Task endpint.
+         * @summary 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -451,7 +397,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
+         * Download the transcript
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -491,39 +438,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUserBilling: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/user-billing`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            // authentication API_KEY required
-            await setApiKeyToObject(localVarHeaderParameter, "x-api-key", configuration)
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * 
+         * Get the status of a video task initiated by `POST /api/videos/:videoId/task`
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -563,7 +479,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
+         * Update the transcript
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {Array<UpdateWordEntryDto>} updateWordEntryDto Array of updated word entries
@@ -609,7 +526,8 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 
+         * Endpoint for uploading a video. You can use the generated `id` in the `POST /api/videos/{id}/task` endpoint to create a task
+         * @summary 
          * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -662,18 +580,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = DefaultApiAxiosParamCreator(configuration)
     return {
         /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async apiKeyStatus(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ApiKeyStatusResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiKeyStatus(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.apiKeyStatus']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
+         * Approves the transcription for a specific video task. This action marks the transcription as reviewed and accepted, allowing the task to proceed to the next processing stage. A successful operation returns no content, indicating the approval has been recorded, and the task is now queued for further processing according to its workflow.
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -686,7 +594,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Create a task for a video. This task will be processed asynchronously You can use the `GET /api/videos/:videoId/task/:id` endpoint to poll for the status. Video id in request parameter is from the response of `POST /api/videos`
+         * @summary 
          * @param {string} videoId 
          * @param {CreateVideoTaskRequestDto} createVideoTaskRequestDto 
          * @param {*} [options] Override http request option.
@@ -699,7 +608,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * 1. Choose the template `id` from the response you wish to add to your video. 2. Supply the chosen `id` in the `templateId` field of the Create Task endpint.
+         * @summary 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -710,7 +620,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Download the transcript
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -723,18 +634,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getUserBilling(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserBillingResponseDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUserBilling(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getUserBilling']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * 
+         * Get the status of a video task initiated by `POST /api/videos/:videoId/task`
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -747,7 +648,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Update the transcript
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {Array<UpdateWordEntryDto>} updateWordEntryDto Array of updated word entries
@@ -761,7 +663,8 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Endpoint for uploading a video. You can use the generated `id` in the `POST /api/videos/{id}/task` endpoint to create a task
+         * @summary 
          * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -783,15 +686,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = DefaultApiFp(configuration)
     return {
         /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        apiKeyStatus(options?: any): AxiosPromise<ApiKeyStatusResponseDto> {
-            return localVarFp.apiKeyStatus(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
+         * Approves the transcription for a specific video task. This action marks the transcription as reviewed and accepted, allowing the task to proceed to the next processing stage. A successful operation returns no content, indicating the approval has been recorded, and the task is now queued for further processing according to its workflow.
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -801,7 +697,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.approveTranscript(videoId, id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Create a task for a video. This task will be processed asynchronously You can use the `GET /api/videos/:videoId/task/:id` endpoint to poll for the status. Video id in request parameter is from the response of `POST /api/videos`
+         * @summary 
          * @param {string} videoId 
          * @param {CreateVideoTaskRequestDto} createVideoTaskRequestDto 
          * @param {*} [options] Override http request option.
@@ -811,7 +708,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.createTask(videoId, createVideoTaskRequestDto, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * 1. Choose the template `id` from the response you wish to add to your video. 2. Supply the chosen `id` in the `templateId` field of the Create Task endpint.
+         * @summary 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -819,7 +717,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getTemplates(options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Download the transcript
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -829,15 +728,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getTranscript(videoId, id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUserBilling(options?: any): AxiosPromise<UserBillingResponseDto> {
-            return localVarFp.getUserBilling(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
+         * Get the status of a video task initiated by `POST /api/videos/:videoId/task`
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {*} [options] Override http request option.
@@ -847,7 +739,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getVideoTask(videoId, id, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Update the transcript
+         * @summary 
          * @param {string} videoId 
          * @param {string} id 
          * @param {Array<UpdateWordEntryDto>} updateWordEntryDto Array of updated word entries
@@ -858,7 +751,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.updateTranscript(videoId, id, updateWordEntryDto, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Endpoint for uploading a video. You can use the generated `id` in the `POST /api/videos/{id}/task` endpoint to create a task
+         * @summary 
          * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -877,17 +771,8 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
  */
 export class DefaultApi extends BaseAPI {
     /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApi
-     */
-    public apiKeyStatus(options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).apiKeyStatus(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
+     * Approves the transcription for a specific video task. This action marks the transcription as reviewed and accepted, allowing the task to proceed to the next processing stage. A successful operation returns no content, indicating the approval has been recorded, and the task is now queued for further processing according to its workflow.
+     * @summary 
      * @param {string} videoId 
      * @param {string} id 
      * @param {*} [options] Override http request option.
@@ -899,7 +784,8 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Create a task for a video. This task will be processed asynchronously You can use the `GET /api/videos/:videoId/task/:id` endpoint to poll for the status. Video id in request parameter is from the response of `POST /api/videos`
+     * @summary 
      * @param {string} videoId 
      * @param {CreateVideoTaskRequestDto} createVideoTaskRequestDto 
      * @param {*} [options] Override http request option.
@@ -911,7 +797,8 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 
+     * 1. Choose the template `id` from the response you wish to add to your video. 2. Supply the chosen `id` in the `templateId` field of the Create Task endpint.
+     * @summary 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
@@ -921,7 +808,8 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Download the transcript
+     * @summary 
      * @param {string} videoId 
      * @param {string} id 
      * @param {*} [options] Override http request option.
@@ -933,17 +821,8 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DefaultApi
-     */
-    public getUserBilling(options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getUserBilling(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
+     * Get the status of a video task initiated by `POST /api/videos/:videoId/task`
+     * @summary 
      * @param {string} videoId 
      * @param {string} id 
      * @param {*} [options] Override http request option.
@@ -955,7 +834,8 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Update the transcript
+     * @summary 
      * @param {string} videoId 
      * @param {string} id 
      * @param {Array<UpdateWordEntryDto>} updateWordEntryDto Array of updated word entries
@@ -968,7 +848,8 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Endpoint for uploading a video. You can use the generated `id` in the `POST /api/videos/{id}/task` endpoint to create a task
+     * @summary 
      * @param {File} file 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

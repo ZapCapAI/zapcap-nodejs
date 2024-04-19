@@ -108,11 +108,13 @@ export class ZapCap {
   async createVideoTask(
     videoId: string,
     templateId: string,
-    autoApprove = false
+    autoApprove = false,
+    language = "en"
   ) {
     return await this._client.createTask(videoId, {
       templateId,
       autoApprove,
+      language,
     });
   }
 }

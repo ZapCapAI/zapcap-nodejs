@@ -1,21 +1,12 @@
 openapi: 3.0.0
 paths:
-  /api-keys/status:
-    get:
-      operationId: apiKeyStatus
-      parameters: []
-      responses:
-        "200":
-          description: Get API Key status
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiKeyStatusResponseDto"
-      security:
-        - API_KEY: []
   /videos:
     post:
       operationId: uploadVideo
+      summary: ""
+      description: >-
+        Endpoint for uploading a video. You can use the generated `id` in the
+        `POST /api/videos/{id}/task` endpoint to create a task
       parameters: []
       requestBody:
         required: true
@@ -26,9 +17,7 @@ paths:
               $ref: "#/components/schemas/VideoUploadRequestDto"
       responses:
         "201":
-          description: >-
-            Endpoint for uploading a video. You can use the generated `id` in
-            the `POST /api/videos/{id}/task` endpoint to create a task
+          description: ""
           content:
             application/json:
               schema:
@@ -38,6 +27,13 @@ paths:
   /videos/{videoId}/task:
     post:
       operationId: createTask
+      summary: ""
+      description: >-
+        Create a task for a video. This task will be processed asynchronously
+        You can use the `GET /api/videos/:videoId/task/:id` endpoint to poll for
+        the status.
+
+        Video id in request parameter is from the response of `POST /api/videos`
       parameters:
         - name: videoId
           required: true
@@ -52,13 +48,7 @@ paths:
               $ref: "#/components/schemas/CreateVideoTaskRequestDto"
       responses:
         "201":
-          description: >-
-            Create a task for a video. This task will be processed
-            asynchronously You can use the `GET /api/videos/:videoId/task/:id`
-            endpoint to poll for the status.
-
-            Video id in request parameter is from the response of `POST
-            /api/videos`
+          description: ""
           content:
             application/json:
               schema:
@@ -68,6 +58,10 @@ paths:
   /videos/{videoId}/task/{id}:
     get:
       operationId: getVideoTask
+      summary: ""
+      description: >-
+        Get the status of a video task initiated by `POST
+        /api/videos/:videoId/task`
       parameters:
         - name: videoId
           required: true
@@ -81,9 +75,7 @@ paths:
             type: string
       responses:
         "200":
-          description: >-
-            Get the status of a video task initiated by `POST
-            /api/videos/:videoId/task`
+          description: ""
           content:
             application/json:
               schema:
@@ -93,6 +85,19 @@ paths:
   /videos/{videoId}/task/{id}/approve-transcript:
     post:
       operationId: approveTranscript
+      summary: ""
+      description: >-
+        Approves the transcription for a specific video task.
+
+        This action marks the transcription as reviewed and accepted,
+
+        allowing the task to proceed to the next processing stage.
+
+        A successful operation returns no content, indicating the approval has
+        been
+
+        recorded, and the task is now queued for further processing according to
+        its workflow.
       parameters:
         - name: videoId
           required: true
@@ -106,23 +111,14 @@ paths:
             type: string
       responses:
         "204":
-          description: >-
-            Approves the transcription for a specific video task.
-
-            This action marks the transcription as reviewed and accepted,
-
-            allowing the task to proceed to the next processing stage.
-
-            A successful operation returns no content, indicating the approval
-            has been
-
-            recorded, and the task is now queued for further processing
-            according to its workflow.
+          description: ""
       security:
         - API_KEY: []
   /videos/{videoId}/task/{id}/transcript:
     get:
       operationId: getTranscript
+      summary: ""
+      description: Download the transcript
       parameters:
         - name: videoId
           required: true
@@ -136,7 +132,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Download the transcript
+          description: ""
           content:
             application/json:
               schema:
@@ -147,6 +143,8 @@ paths:
         - API_KEY: []
     put:
       operationId: updateTranscript
+      summary: ""
+      description: Update the transcript
       parameters:
         - name: videoId
           required: true
@@ -169,7 +167,7 @@ paths:
                 $ref: "#/components/schemas/UpdateWordEntryDto"
       responses:
         "200":
-          description: Update the transcript
+          description: ""
           content:
             application/json:
               schema:
@@ -181,36 +179,23 @@ paths:
   /templates:
     get:
       operationId: getTemplates
+      summary: ""
+      description: >-
+        1. Choose the template `id` from the response you wish to add to your
+        video.
+
+        2. Supply the chosen `id` in the `templateId` field of the Create Task
+        endpint.
       parameters: []
       responses:
         "200":
-          description: >-
-            1. Choose the template `id` from the response you wish to add to
-            your video.
-
-            2. Supply the chosen `id` in the `templateId` field of the Create
-            Task endpint.
+          description: ""
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/TemplateDto"
-      security:
-        - API_KEY: []
-  /user-billing:
-    get:
-      operationId: getUserBilling
-      parameters: []
-      responses:
-        "200":
-          description: >-
-            Available total render duration and used render duration. Remaining
-            render duration = `totalRenderDuration - usedRenderDuration`
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserBillingResponseDto"
       security:
         - API_KEY: []
 info:
@@ -229,18 +214,6 @@ components:
       in: header
       name: x-api-key
   schemas:
-    ApiKeyStatusResponseDto:
-      type: object
-      properties:
-        apiKey:
-          type: string
-          description: API Key
-        active:
-          type: boolean
-          description: Status of API Key. Can only be disabled by support.
-      required:
-        - apiKey
-        - active
     VideoUploadRequestDto:
       type: object
       properties:
@@ -254,6 +227,7 @@ components:
       enum:
         - todo
         - uploaded
+        - inProgress
         - aborted
     CreateVideoResponseDto:
       type: object
@@ -287,8 +261,13 @@ components:
             This is useful for workflows where immediate processing of the task
             is desired, bypassing the need for an explicit approval step.
           default: false
+        language:
+          type: string
+          description: Language the subtitles should be in. Defaults to English.
+          default: English
       required:
         - templateId
+        - language
     CreateVideoTaskResponseDto:
       type: object
       properties:
@@ -321,7 +300,7 @@ components:
         transcript:
           type: string
           nullable: true
-          description: Url to download the transcript. Link is valid for 1 hour
+          description: Url to download the transcript. Link is valid for 1 hour.
         downloadUrl:
           type: string
           nullable: true
@@ -329,6 +308,9 @@ components:
         transcriptApproved:
           type: boolean
           description: Whether the transcript has been approved.
+        error:
+          type: string
+          description: Why the task failed
       required:
         - status
         - id
@@ -413,17 +395,3 @@ components:
           example: a51c5222-47a7-4c37-b052-7b9853d66bf6
       required:
         - id
-    UserBillingResponseDto:
-      type: object
-      properties:
-        totalRenderDuration:
-          type: number
-          description: Total render duration accumulated
-          example: 180
-        usedRenderDuration:
-          type: number
-          description: Total render duration use accumulated
-          example: 60
-      required:
-        - totalRenderDuration
-        - usedRenderDuration
