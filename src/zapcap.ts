@@ -109,7 +109,7 @@ export class ZapCap {
     videoId: string,
     templateId: string,
     autoApprove = false,
-    language = "en"
+    language?: string
   ) {
     return await this._client.createTask(videoId, {
       templateId,
