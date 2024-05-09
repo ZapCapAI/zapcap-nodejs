@@ -1,6 +1,6 @@
 # 🚀 ZapCap SDK
 
-The ZapCap SDK provides a powerful interface to the ZapCap API, allowing you to effortlessly generate amazing subtitles for your videos, manage video tasks, and streamline your video processing workflow with just a few lines of code. Detailed documentation of our API can be found at our [OpenAPI Documentation](https://api.zapcap.dev/api).
+The ZapCap SDK provides a powerful interface to the ZapCap API, allowing you to effortlessly generate amazing subtitles for your videos, manage video tasks, and streamline your video processing workflow with just a few lines of code. Detailed documentation of our API can be found at our [OpenAPI Documentation](https://api.zapcap.ai/api).
 
 ## 📦 Installation
 
@@ -16,7 +16,7 @@ yarn add zapcap
 
 ## 🔑 Setting Up
 
-> **Note:** If you do not have a ZapCap API Key, please contact us at [hi@zapcap.dev](mailto:hi@zapcap.dev) to get one.
+> **Note:** If you do not have a ZapCap API Key, please contact us at [hi@zapcap.ai](mailto:hi@zapcap.ai) to get one.
 
 Before you start, make sure you have your ZapCap API Key. Configure it in your environment:
 
@@ -124,14 +124,14 @@ During our **closed alpha** phase, ZapCap is excited to offer our API services *
 
 **Here's how you can participate:**
 
-- **Exclusive Access**: To become a part of our select group of alpha users, simply email us at [hi@zapcap.dev](mailto:hi@zapcap.dev). Please include an explanation of your use case and how you plan to use the ZapCap API. Our team is eager to learn about your projects and how we can support them.
+- **Exclusive Access**: To become a part of our select group of alpha users, simply email us at [hi@zapcap.ai](mailto:hi@zapcap.ai). Please include an explanation of your use case and how you plan to use the ZapCap API. Our team is eager to learn about your projects and how we can support them.
 - **Feedback Contribution**: As an alpha user, your insights and feedback will be invaluable. You'll have the chance to shape the development of ZapCap, ensuring it meets your needs and expectations.
 
 **Future Billing Plans:**
 
 As we progress beyond the alpha phase, ZapCap will transition to a **usage-based billing model**. This model is designed to be cost-effective, ensuring you only pay for the processing time you use, which includes video upload, transcription, and rendering.
 
-For inquiries about the alpha program or future billing options, feel free to reach out at [hi@zapcap.dev](mailto:hi@zapcap.dev).
+For inquiries about the alpha program or future billing options, feel free to reach out at [hi@zapcap.ai](mailto:hi@zapcap.ai).
 
 ## 📚 Features
 
@@ -143,11 +143,11 @@ For inquiries about the alpha program or future billing options, feel free to re
 
 ## 📄 API Reference
 
-Refer to the official [ZapCap API documentation](https://api.zapcap.dev/api) for a comprehensive list of endpoints and their functionalities.
+Refer to the official [ZapCap documentation](https://platform.zapcap.ai/docs/) for a comprehensive list of endpoints and their functionalities.
 
 ## ✉️ Support
 
-For support, please open an issue or contact hi@zapcap.dev.
+For support, please open an issue or contact hi@zapcap.ai.
 
 ---
 
