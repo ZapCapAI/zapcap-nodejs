@@ -16,7 +16,7 @@ yarn add zapcap
 
 ## 🔑 Setting Up
 
-> **Note:** If you do not have a ZapCap API Key, please contact us at [hi@zapcap.ai](mailto:hi@zapcap.ai) to get one.
+> **Note:** If you do not have a ZapCap API Key, please sign up [here](https://platform.zapcap.ai/) to get one.
 
 Before you start, make sure you have your ZapCap API Key. Configure it in your environment:
 
