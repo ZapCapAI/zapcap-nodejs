@@ -1,12 +1,33 @@
 openapi: 3.0.0
 paths:
+  /videos/url:
+    post:
+      operationId: uploadVideoByUrl
+      parameters: []
+      requestBody:
+        required: true
+        description: >-
+          URL of the video to upload. Mimetypes allowed: `video/mp4`,
+          `video/quicktime`
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoUploadByUrlRequestDto"
+      responses:
+        "201":
+          description: >-
+            Endpoint for uploading a video using a URL. You can use the
+            generated `id` in the `POST /api/videos/{id}/task` endpoint to
+            create a task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateVideoResponseDto"
+      security:
+        - API_KEY: []
   /videos:
     post:
       operationId: uploadVideo
-      summary: ""
-      description: >-
-        Endpoint for uploading a video. You can use the generated `id` in the
-        `POST /api/videos/{id}/task` endpoint to create a task
       parameters: []
       requestBody:
         required: true
@@ -17,23 +38,54 @@ paths:
               $ref: "#/components/schemas/VideoUploadRequestDto"
       responses:
         "201":
-          description: ""
+          description: >-
+            Endpoint for uploading a video. You can use the generated `id` in
+            the `POST /api/videos/{id}/task` endpoint to create a task
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CreateVideoResponseDto"
       security:
         - API_KEY: []
+  /videos/upload:
+    post:
+      operationId: createUpload
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateVideoUploadRequestDto"
+      responses:
+        "201":
+          description: >-
+            Used for initiating a multipart upload. Each chunk must be >= 5mb
+            except the last chunk.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateVideoUploadResponseDto"
+      security:
+        - API_KEY: []
+  /videos/upload/complete:
+    post:
+      operationId: completeUpload
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteVideoUploadRequestDto"
+      responses:
+        "201":
+          description: Used for completing an upload session.
+      security:
+        - API_KEY: []
   /videos/{videoId}/task:
     post:
       operationId: createTask
-      summary: ""
-      description: >-
-        Create a task for a video. This task will be processed asynchronously
-        You can use the `GET /api/videos/:videoId/task/:id` endpoint to poll for
-        the status.
-
-        Video id in request parameter is from the response of `POST /api/videos`
       parameters:
         - name: videoId
           required: true
@@ -48,7 +100,13 @@ paths:
               $ref: "#/components/schemas/CreateVideoTaskRequestDto"
       responses:
         "201":
-          description: ""
+          description: >-
+            Create a task for a video. This task will be processed
+            asynchronously You can use the `GET /api/videos/:videoId/task/:id`
+            endpoint to poll for the status.
+
+            Video id in request parameter is from the response of `POST
+            /api/videos`
           content:
             application/json:
               schema:
@@ -58,10 +116,6 @@ paths:
   /videos/{videoId}/task/{id}:
     get:
       operationId: getVideoTask
-      summary: ""
-      description: >-
-        Get the status of a video task initiated by `POST
-        /api/videos/:videoId/task`
       parameters:
         - name: videoId
           required: true
@@ -75,7 +129,9 @@ paths:
             type: string
       responses:
         "200":
-          description: ""
+          description: >-
+            Get the status of a video task initiated by `POST
+            /api/videos/:videoId/task`
           content:
             application/json:
               schema:
@@ -85,19 +141,6 @@ paths:
   /videos/{videoId}/task/{id}/approve-transcript:
     post:
       operationId: approveTranscript
-      summary: ""
-      description: >-
-        Approves the transcription for a specific video task.
-
-        This action marks the transcription as reviewed and accepted,
-
-        allowing the task to proceed to the next processing stage.
-
-        A successful operation returns no content, indicating the approval has
-        been
-
-        recorded, and the task is now queued for further processing according to
-        its workflow.
       parameters:
         - name: videoId
           required: true
@@ -111,14 +154,23 @@ paths:
             type: string
       responses:
         "204":
-          description: ""
+          description: >-
+            Approves the transcription for a specific video task.
+
+            This action marks the transcription as reviewed and accepted,
+
+            allowing the task to proceed to the next processing stage.
+
+            A successful operation returns no content, indicating the approval
+            has been
+
+            recorded, and the task is now queued for further processing
+            according to its workflow.
       security:
         - API_KEY: []
   /videos/{videoId}/task/{id}/transcript:
     get:
       operationId: getTranscript
-      summary: ""
-      description: Download the transcript
       parameters:
         - name: videoId
           required: true
@@ -132,7 +184,7 @@ paths:
             type: string
       responses:
         "200":
-          description: ""
+          description: Download the transcript
           content:
             application/json:
               schema:
@@ -143,8 +195,6 @@ paths:
         - API_KEY: []
     put:
       operationId: updateTranscript
-      summary: ""
-      description: Update the transcript
       parameters:
         - name: videoId
           required: true
@@ -167,7 +217,7 @@ paths:
                 $ref: "#/components/schemas/UpdateWordEntryDto"
       responses:
         "200":
-          description: ""
+          description: Update the transcript
           content:
             application/json:
               schema:
@@ -179,17 +229,15 @@ paths:
   /templates:
     get:
       operationId: getTemplates
-      summary: ""
-      description: >-
-        1. Choose the template `id` from the response you wish to add to your
-        video.
-
-        2. Supply the chosen `id` in the `templateId` field of the Create Task
-        endpint.
       parameters: []
       responses:
         "200":
-          description: ""
+          description: >-
+            1. Choose the template `id` from the response you wish to add to
+            your video.
+
+            2. Supply the chosen `id` in the `templateId` field of the Create
+            Task endpint.
           content:
             application/json:
               schema:
@@ -206,7 +254,8 @@ info:
 tags:
   - name: zapcap
     description: ""
-servers: []
+servers:
+  - url: https://api.zapcap.ai
 components:
   securitySchemes:
     API_KEY:
@@ -214,14 +263,13 @@ components:
       in: header
       name: x-api-key
   schemas:
-    VideoUploadRequestDto:
+    VideoUploadByUrlRequestDto:
       type: object
       properties:
-        file:
+        url:
           type: string
-          format: binary
       required:
-        - file
+        - url
     VideoStatusEnum:
       type: string
       enum:
@@ -242,6 +290,233 @@ components:
       required:
         - status
         - id
+    VideoUploadRequestDto:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+        - file
+    UploadPartsDto:
+      type: object
+      properties:
+        contentLength:
+          type: number
+          description: >-
+            Size of part in bytes. Must be >= 5mb except for the last part.
+
+            As a recommendation chunk your file by at least 10mb for
+            performance.
+          example: 10485760
+      required:
+        - contentLength
+    CreateVideoUploadRequestDto:
+      type: object
+      properties:
+        uploadParts:
+          type: array
+          items:
+            $ref: "#/components/schemas/UploadPartsDto"
+        filename:
+          type: string
+          description: Name of the file
+          example: sample.mp4
+      required:
+        - uploadParts
+        - filename
+    CreateVideoUploadResponseDto:
+      type: object
+      properties:
+        uploadId:
+          type: string
+          description: >-
+            Upload id you will need to pass back to the ZapCap API when
+            finalising the upload session.
+        videoId:
+          type: string
+          description: >-
+            Video id which will be used for subsequent requests when processing
+            the video.
+        urls:
+          description: >-
+            Presigned upload URLs. You need to upload parts in the order the
+            urls are returned in the array.
+          type: array
+          items:
+            type: string
+      required:
+        - uploadId
+        - videoId
+        - urls
+    CompleteVideoUploadRequestDto:
+      type: object
+      properties: {}
+    SubsOptionsDto:
+      type: object
+      properties:
+        emoji:
+          type: boolean
+          description: Whether to enable or disable emojis in the subtitles.
+          example: true
+        emojiAnimation:
+          type: boolean
+          description: Whether the emoji's should be animated or not.
+          example: true
+        emphasizeKeywords:
+          type: boolean
+          description: >-
+            Whether the important words should be highlighted or not.
+
+            Highlighted keywords can be coloured different or stand out in a
+            specific manner depending on the template chosen.
+
+            In most templates, the highlight keyword will be coloured randomly
+            from from 3 colours which can be overridden using the
+            `renderOptions.highlightOptions` object.
+          example: true
+        animation:
+          type: boolean
+          description: Whether the subtitles should be animated.
+          example: true
+        punctuation:
+          type: boolean
+          description: Whether punctuation should be added to the subtitles.
+          example: true
+    StyleOptionsDto:
+      type: object
+      properties:
+        top:
+          type: number
+          description: >-
+            The Y position of the subtitles, represented as a percentage of the
+            video's height.
+
+            The higher the value, the lower the subtitles will be on the video.
+          example: 40
+        fontUppercase:
+          type: boolean
+          description: Whether the subtitles should be uppercased.
+          example: true
+        fontSize:
+          type: number
+          description: Font size of subtitles.
+          example: 46
+        fontWeight:
+          type: number
+          description: >-
+            Font weight of subtitles. Refer to the numerical values for
+            font-weight in css.
+          example: 900
+        fontColor:
+          type: string
+          description: Base colour of subtitles.
+          example: "#ffffff"
+    HighlightOptionsDto:
+      type: object
+      properties:
+        randomColourOne:
+          type: string
+          description: Random colour option one.
+          example: "#2bf82a"
+        randomColourTwo:
+          type: string
+          description: Random colour option two.
+          example: "#fdfa14"
+        randomColourThree:
+          type: string
+          description: Random colour option three.
+          example: "#f01916"
+    RenderOptionsDto:
+      type: object
+      properties:
+        subsOptions:
+          description: This object controls the subtitle rows appearance and config.
+          allOf:
+            - $ref: "#/components/schemas/SubsOptionsDto"
+        styleOptions:
+          description: This object controls the subtitles' font and config.
+          allOf:
+            - $ref: "#/components/schemas/StyleOptionsDto"
+        highlightOptions:
+          description: This object controls the colouring option of important words
+          allOf:
+            - $ref: "#/components/schemas/HighlightOptionsDto"
+    NotificationDto:
+      type: object
+      properties:
+        recipient:
+          type: string
+          description: >-
+            A generic recipient. Its behavior will change depending on the
+            notification type. For webhooks, the recipient is expected to be a
+            webhook endpoint accepting a POST request.
+
+
+            In the POST request, a signature will be sent which you can use to
+            verify the authenticity of the message. Your webhook secret can be
+            found on https://platform.zapcap.ai/dashboard/api-key.
+        type:
+          type: string
+          description: >-
+            Specifies the type of notification to be sent. Currently, only
+            webhook notifications are supported.
+          enum:
+            - webhook
+        notificationsFor:
+          type: array
+          description: >-
+            Allows you to subscribe to task notifications for the chosen
+            notification type.
+
+
+            You may select any combination of tasks. Once a corresponding task
+            transitions to a terminal state, a notification will be sent.
+
+
+            Please note, if a task fails, a notification will be sent for only
+            one of the events which was opted in to.
+          items:
+            type: string
+            enum:
+              - transcript
+              - render
+              - renderProgress
+      required:
+        - recipient
+        - type
+        - notificationsFor
+    UpdateWordEntryDto:
+      type: object
+      properties:
+        text:
+          type: string
+          description: The subtitle text
+        type:
+          type: string
+          description: Type of the entry
+          example: word
+        end_time:
+          type: number
+          description: End time in seconds
+          example: 3.18
+        start_time:
+          type: number
+          description: Start time in seconds
+          example: 2.12
+        emoji:
+          type: string
+          description: Emoji representation of the word
+          nullable: true
+          example: ðŸ˜Š
+        important:
+          type: boolean
+          description: Indicates if the word is important, and should be highlighted.
+      required:
+        - text
+        - type
+        - end_time
+        - start_time
     CreateVideoTaskRequestDto:
       type: object
       properties:
@@ -261,6 +536,21 @@ components:
             This is useful for workflows where immediate processing of the task
             is desired, bypassing the need for an explicit approval step.
           default: false
+        transcriptTaskId:
+          type: string
+          description: >-
+            Providing this will copy the transcript from another task.
+
+            This is useful for workflows where you want to use the same
+            transcript for multiple rendering tasks.
+
+            If the transcript's duration is longer than the video's duration,
+            the transcript will be truncated. If the video's duration is longer,
+            the video will not be truncated.
+
+            It will simply be rendered without the subtitles beyond the provided
+            transcript.
+          example: cd97a23f-6c6d-4af7-ad66-b04ed4bb1c5e
         language:
           type: string
           description: >-
@@ -281,6 +571,27 @@ components:
             'sr','su','sv','sw','ta','te','tg','th','tk','tl','tr','tt','uk','ur','uz','vi',
 
             'yi','yo','zh','yue'
+        renderOptions:
+          description: >-
+            Override render defaults. You are able to control various aspects of
+            the subtitles using this property.
+          allOf:
+            - $ref: "#/components/schemas/RenderOptionsDto"
+        notification:
+          description: >-
+            Configure notifications on task status change. Refer to the
+            [docs](https://platform.zapcap.ai/docs/webhooks/) for a complete
+            overview.
+          allOf:
+            - $ref: "#/components/schemas/NotificationDto"
+        transcript:
+          description: >-
+            This supports a "Bring your own Transcription" model. When this is
+            supplied, the ZapCap API will not transcribe your video and instead
+            use the provided value.
+          type: array
+          items:
+            $ref: "#/components/schemas/UpdateWordEntryDto"
       required:
         - templateId
     CreateVideoTaskResponseDto:
@@ -334,9 +645,6 @@ components:
     WordEntryDto:
       type: object
       properties:
-        id:
-          type: string
-          description: Id of the specific word instance
         text:
           type: string
           description: The subtitle text
@@ -365,41 +673,9 @@ components:
           type: boolean
           description: Indicates if the word is important, and should be highlighted.
       required:
-        - id
         - text
         - type
         - confidence
-        - end_time
-        - start_time
-    UpdateWordEntryDto:
-      type: object
-      properties:
-        text:
-          type: string
-          description: The subtitle text
-        type:
-          type: string
-          description: Type of the entry
-          example: word
-        end_time:
-          type: number
-          description: End time in seconds
-          example: 3.18
-        start_time:
-          type: number
-          description: Start time in seconds
-          example: 2.12
-        emoji:
-          type: string
-          description: Emoji representation of the word
-          nullable: true
-          example: ðŸ˜Š
-        important:
-          type: boolean
-          description: Indicates if the word is important, and should be highlighted.
-      required:
-        - text
-        - type
         - end_time
         - start_time
     TemplateDto:
@@ -408,5 +684,37 @@ components:
         id:
           type: string
           example: a51c5222-47a7-4c37-b052-7b9853d66bf6
+        categories:
+          description: >-
+            Categories the template can be belongs to. Animated has animated
+            emojis, highlighted has highlighted emphasis words, and basic has no
+            emojis.
+          example:
+            - animated
+            - highlighted
+            - basic
+          type: array
+          items:
+            type: string
+        previewUrl:
+          type: string
+          description: >-
+            URL to the preview video of the template. The video is a 1 second
+            preview of the template.
+          example: >-
+            https://cdn.zapcap.ai/templates/7b946549-ae16-4085-9dd3-c20c82504daa.mp4
+          deprecated: true
+        previews:
+          type: object
+          properties:
+            previewMp4:
+              required: true
+              type: string
+            previewGif:
+              required: true
+              type: string
       required:
         - id
+        - categories
+        - previewUrl
+        - previews

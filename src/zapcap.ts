@@ -5,12 +5,13 @@ import {
   GetVideoTaskResponseDto,
   TemplateDto,
   VideoTaskStatusEnum,
+  WordEntryDto,
 } from "./api";
 import FormData from "form-data";
 import { Readable } from "stream";
 import { Configuration } from "./configuration";
 
-const BASE_PATH = "https://api.zapcap.dev";
+const BASE_PATH = "https://api.zapcap.ai";
 
 export type ZapCapOptions = {
   apiKey: string;
@@ -74,6 +75,13 @@ export class ZapCap {
     return await this._client.getVideoTask(videoId, taskId);
   }
 
+  async getTranscript(
+    videoId: string,
+    taskId: string
+  ): AxiosPromise<WordEntryDto[]> {
+    return await this._client.getTranscript(videoId, taskId);
+  }
+
   async approveTranscript(
     videoId: string,
     taskId: string
@@ -103,6 +111,10 @@ export class ZapCap {
     }
 
     return this._axios.post("videos", formData);
+  }
+
+  async uploadVideoByUrl(url: string): AxiosPromise<CreateVideoResponseDto> {
+    return await this._client.uploadVideoByUrl({ url });
   }
 
   async createVideoTask(
